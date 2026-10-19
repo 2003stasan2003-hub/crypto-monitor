@@ -2,7 +2,8 @@ import json
 import requests
 
 def fetch_crypto_data():
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true"
+    # Додали 'tether' у список монет для запиту
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd&include_24hr_change=true"
     try:
         response = requests.get(url).json()
         data = {
@@ -18,6 +19,11 @@ def fetch_crypto_data():
                 "price": response.get("solana", {}).get("usd", 0),
                 "change": response.get("solana", {}).get("usd_24h_change", 0)
             },
+            # Додаємо блок для USDT
+            "usdt": {
+                "price": response.get("tether", {}).get("usd", 0),
+                "change": response.get("tether", {}).get("usd_24h_change", 0)
+            },
             "sentiment": "БИЧАЧИЙ (Bullish)",
             "risk": "Середній",
             "news": [
@@ -26,7 +32,7 @@ def fetch_crypto_data():
                 {"time": "09:00", "title": "Ескалація політичних ризиків у регіоні видобутку енергоресурсів", "impact": "Негативний"}
             ]
         }
-
+        
         with open("crypto_data.json", "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
         print("Дані успішно оновлено!")
