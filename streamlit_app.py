@@ -1,13 +1,11 @@
 import streamlit as st
 import requests
 
-# Налаштування сторінки
-st.set_page_config(page_title="CryptoMind AI Terminal", page_icon="📈", layout="wide")
+st.set_page_config(page_title="CryptoMind AI: Фундаментальний Термінал", page_icon="🧠", layout="wide")
 
-# Завантаження даних із вашого JSON на GitHub
 json_url = "https://raw.githubusercontent.com/2003stasan2003-hub/crypto-monitor/main/crypto_data.json"
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=30)
 def load_data():
     try:
         res = requests.get(json_url)
@@ -19,13 +17,12 @@ def load_data():
 
 data = load_data()
 
-st.title("📈 CryptoMind AI: Мобільний Термінал")
+st.title("🧠 CryptoMind AI: Аналітичний Термінал та Прогнози")
 st.markdown("---")
 
 if data:
-    # Блок карток цін
+    # 1. Картки цін
     col1, col2, col3, col4 = st.columns(4)
-    
     btc = data.get("btc", {})
     eth = data.get("eth", {})
     sol = data.get("sol", {})
@@ -42,41 +39,63 @@ if data:
 
     st.markdown("---")
 
-    # Блок AI-Аналітики
-    st.subheader("🧠 Глобальна AI-аналітика та прогноз")
-    st.info(
-        "🟢 **ЗЕЛЕНА ЗОНА РИЗИКУ (BUY):** Сприятливий фон, низька інфляція, приплив у спотові ETF. Час купувати та накопичувати.\n\n"
-        "🔴 **ЧЕРВОНА ЗОНА РИЗИКУ (SELL):** Зона перегріву, фіксація прибутку китами, ризик корекції. Час виводити в USDT."
-    )
+    # 2. Блок комплексної аналітики (Макро, Ончейн, Сентимент)
+    st.subheader("🌐 Комплексний аналіз ринку (Фонду, Кити, Сентимент)")
+    
+    market_intel = data.get("market_intelligence", {})
+    macro = market_intel.get("macro_analysis", {})
+    onchain = market_intel.get("onchain_analysis", {})
+    
+    # Індекс страху та жадібності
+    fng_val = market_intel.get("fear_and_greed_index", 50)
+    fng_label = market_intel.get("sentiment_label", "Нейтрально")
+    
+    col_a, col_b = st.columns(2)
+    
+    with col_a:
+        st.markdown("### 🏛️ А. Макроекономіка (ФРС та SEC)")
+        st.info(
+            f"📈 **Ставка ФРС:** {macro.get('fed_rate', 'Н/Д')}\n\n"
+            f"📉 **Інфляція (CPI):** {macro.get('cpi_inflation', 'Н/Д')}\n\n"
+            f"⚖️ **Регулятори (SEC / ETF):** {macro.get('sec_regulations', 'Н/Д')}"
+        )
+        
+        st.markdown("### 🐋 Б. Ончейн-аналітика (Дії китів)")
+        st.success(
+            f"🔄 **Рух на біржах:** {onchain.get('whale_movement', 'Н/Д')}\n\n"
+            f"💥 **Ліквідації:** {onchain.get('liquidations', 'Н/Д')}"
+        )
+
+    with col_b:
+        st.markdown("### 🌡️ В. Сентимент натовпу")
+        st.metric("Індекс страху та жадібності", f"{fng_val} / 100", fng_label)
+        if fng_val <= 25:
+            st.warning("⚠️ Екстремальний страх: Ринкова паніка. Ідеальна можливість для купівлі (🟢 BUY).")
+        elif fng_val >= 75:
+            st.error("🚨 Екстремальна жадібність: Ринок перегрітий. Час фіксувати прибуток у USDT (🔴 SELL).")
+        else:
+            st.info("⚖️ Помірний баланс: Сприятливі умови для зваженої торгівлі.")
+
+        st.markdown("### 🎯 Загальний прогноз AI")
+        st.markdown(
+            "🟢 **Зелена зона ризику (Ріст):** Підтримується дешевшими грошима ФРС та відтоком монет китами з бірж.\n\n"
+            "🔴 **Червона зона ризику (Падіння):** Активується при зростанні інфляції або досягненні екстремальної жадібності."
+        )
 
     st.markdown("---")
 
-    # Стрічка новин по днях
-    st.subheader("📰 Інтерактивний дайджест новин та драйверів")
+    # 3. Інтерактивний дайджест новин по днях
+    st.subheader("📰 Драйвери та новини по днях тижня")
     news_dict = data.get("news_by_day", {})
-    
-    selected_day = st.selectbox("Оберіть день тижня для перегляду новин:", list(news_dict.keys()))
+    selected_day = st.selectbox("Оберіть день для детального аналізу:", list(news_dict.keys()))
     
     if selected_day in news_dict:
         day_info = news_dict[selected_day]
         st.markdown(f"### 📅 День: {selected_day}")
-        st.markdown(f"**📌 Драйвер / Подія:** {day_info.get('title')}")
+        st.markdown(f"**📌 Подія:** {day_info.get('title')}")
         st.markdown(f"**📂 Категорія:** {day_info.get('category')}")
         st.markdown(f"**⚖️ Вплив:** {day_info.get('impact')}")
-        st.markdown(f"**📊 Аналіз причин:** {day_info.get('analysis')}")
-
-    st.markdown("---")
-    
-    # Мобільний конвертер валют у USDT
-    st.subheader("🧮 Конвертер валют у USDT")
-    c_col1, c_col2 = st.columns(2)
-    with c_col1:
-        coin = st.selectbox("Оберіть монету", ["BTC", "ETH", "SOL", "USDT"])
-        amount = st.number_input("Кількість", value=1.0)
-    with c_col2:
-        prices_map = {"BTC": btc.get('price', 0), "ETH": eth.get('price', 0), "SOL": sol.get('price', 0), "USDT": 1.0}
-        total_usdt = amount * prices_map.get(coin, 0)
-        st.metric("Результат конвертації", f"${total_usdt:,.2f} USDT")
+        st.markdown(f"**📊 Аналіз українською:** {day_info.get('analysis')}")
 
 else:
-    st.error("Не вдалося завантажити дані з GitHub. Перевірте посилання або структуру JSON.")
+    st.error("Помилка завантаження даних із GitHub.")
