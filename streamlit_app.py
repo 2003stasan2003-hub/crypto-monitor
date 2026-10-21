@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import random
 
-# Налаштування сторінки Streamlit для мобільного екрана (широкий макет)
+# Налаштування сторінки Streamlit для повного розміщення на одному екрані
 st.set_page_config(
     page_title="CryptoMinter Pro",
     page_icon="📈",
@@ -27,15 +27,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Заголовок додатку
-st.markdown("## 🚀 CryptoMinter Pro — Аналітичний Термінал")
+# Головний заголовок
+st.markdown("## 🚀 CryptoMinter Pro — Професійний Термінал")
 st.markdown("---")
 
-# РОЗПОДІЛ НА ДВІ ЧАСТИНИ: ЛІВА (маленька/панель управління) та ПРАВА (велика/графіки)
-left_panel, right_panel = st.columns([1, 2.8])
+# Розподіл екрана на дві частини (ЛІВА — управління та ШІ, ПРАВА — графіки та ціни)
+left_control, right_display = st.columns([1.2, 2.8])
 
-with left_panel:
-    st.markdown("### ⚙️ Керування")
+with left_control:
+    st.markdown("### ⚙️ Панель управління")
     
     # 1. Режими торгівлі
     section = st.selectbox(
@@ -44,49 +44,57 @@ with left_panel:
         index=0
     )
 
-    st.markdown("---")
-    
     # 2. Часова рамка
-    st.markdown("### ⏱ Часова рамка")
     tf = st.radio(
-        "Оберіть масштаб:",
+        "⏱ Масштаб графіків:",
         ["1г", "4г", "1д", "1тиж", "2тиж", "1міс"],
         horizontal=True
     )
 
     st.markdown("---")
     
-    # 3. Актуальні ціни
-    st.markdown("### 📊 Поточні ціни")
-    st.markdown("**BTC/USDT:** <span style='color: #0ecb81; font-weight: bold;'>$84,666.00 (+2.44%)</span>", unsafe_allow_html=True)
-    st.markdown("**ETH/USDT:** <span style='color: #0ecb81; font-weight: bold;'>$2,506.08 (+2.48%)</span>", unsafe_allow_html=True)
+    # 3. НОВА КНОПКА: ШІ-помічник з базою знань
+    st.markdown("### 🤖 ШІ-Помічник (Торгова База)")
+    if st.button("Запустити ШІ-Аналіз ринку", use_container_width=True):
+        ai_tips = {
+            "Ф'ючерси": "💡 **База ШІ (Ф'ючерси):** Тренд бичачий. Рекомендовано використовувати крос-маржу 10x та ставити стоп-лосс нижче локального мінімуму.",
+            "Спот": "💡 **База ШІ (Спот):** Сприятливий момент для накопичення активов. Купуйте частинами (дзвіночок DCA).",
+            "Опціони": "💡 **База ШІ (Опціони):** Висока волатильність. Стратегія Кол (Call) на пробій рівня дає перевагу.",
+            "Торгові боти": "💡 **База ШІ (Боти):** Увімкніть спотову сітку з діапазоном ±15% від поточної ціни.",
+            "Копітрейдинг": "💡 **База ШІ (Копітрейдинг):** Обирайте топ-трейдерів із просадкою менше 20% за останній місяць."
+        }
+        st.info(ai_tips.get(section, "💡 **База ШІ:** Аналізую ринкові дані у реальному часі..."))
 
-    st.markdown("---")
-    
-    # 4. Кнопка виконання операції
+    # 4. Кнопка виконання
     if st.button(f"Виконати ({section})", use_container_width=True):
         st.success(f"Успішно опрацьовано для: {section}!")
-    
-    st.markdown("---")
-    st.info("💡 **Порада:** Обирайте часову рамку зверху-ліворуч, щоб динамічно масштабувати графіки справа.")
 
 
-with right_panel:
-    st.markdown("### 📈 Динамічні графіки ринку (BTC & ETH)")
+with right_display:
+    st.markdown("### 📈 Ринковий моніторинг (BTC & ETH)")
+
+    # Поточні ціни у великому полі справа
+    cp1, cp2 = st.columns(2)
+    with cp1:
+        st.markdown("**BTC/USDT:** <span style='color: #0ecb81; font-size: 18px; font-weight: bold;'>$84,666.00 (+2.44%)</span>", unsafe_allow_html=True)
+    with cp2:
+        st.markdown("**ETH/USDT:** <span style='color: #0ecb81; font-size: 18px; font-weight: bold;'>$2,506.08 (+2.48%)</span>", unsafe_allow_html=True)
+
+    st.markdown("")
 
     # Генерація даних та точного часу для осі X
     def generate_time_series(base_price, timeframe):
         now = datetime.now()
-        points = 6 if timeframe in ["1г", "4г"] else 5
+        points = 5
         
         if timeframe == "1г":
-            delta = timedelta(minutes=10)
+            delta = timedelta(minutes=12)
         elif timeframe == "4г":
-            delta = timedelta(minutes=40)
+            delta = timedelta(minutes=48)
         elif timeframe == "1д":
             delta = timedelta(hours=4)
         elif timeframe == "1тиж":
-            delta = timedelta(days=1 + 1/3)
+            delta = timedelta(days=1.5)
         elif timeframe == "2тиж":
             delta = timedelta(days=3)
         else:  # "1міс"
@@ -108,12 +116,12 @@ with right_panel:
     times_btc, btc_data = generate_time_series(84666.0, tf)
     times_eth, eth_data = generate_time_series(2506.0, tf)
 
-    # Паралельні графіки всередині правої панелі
+    # Паралельні графіки всередині правої панелі (компактні, на одному екрані)
     col_chart1, col_chart2 = st.columns(2)
 
     with col_chart1:
         st.markdown(f"**Bitcoin (BTC) — [{tf}]**")
-        fig_btc, ax_btc = plt.subplots(figsize=(3.5, 3))
+        fig_btc, ax_btc = plt.subplots(figsize=(3.8, 2.2))
         fig_btc.patch.set_facecolor('#1e2329')
         ax_btc.set_facecolor('#1e2329')
         
@@ -121,7 +129,7 @@ with right_panel:
         ax_btc.fill_between(times_btc, min(btc_data)*0.99, btc_data, color='#f0b90b', alpha=0.12)
         
         ax_btc.tick_params(colors='#848e9c', labelsize=7)
-        plt.setp(ax_btc.get_xticklabels(), rotation=20)
+        plt.setp(ax_btc.get_xticklabels(), rotation=15)
         ax_btc.spines['top'].set_visible(False)
         ax_btc.spines['left'].set_visible(False)
         ax_btc.spines['right'].set_color('#2b313a')
@@ -130,7 +138,7 @@ with right_panel:
 
     with col_chart2:
         st.markdown(f"**Ethereum (ETH) — [{tf}]**")
-        fig_eth, ax_eth = plt.subplots(figsize=(3.5, 3))
+        fig_eth, ax_eth = plt.subplots(figsize=(3.8, 2.2))
         fig_eth.patch.set_facecolor('#1e2329')
         ax_eth.set_facecolor('#1e2329')
         
@@ -138,7 +146,7 @@ with right_panel:
         ax_eth.fill_between(times_eth, min(eth_data)*0.99, eth_data, color='#0ecb81', alpha=0.12)
         
         ax_eth.tick_params(colors='#848e9c', labelsize=7)
-        plt.setp(ax_eth.get_xticklabels(), rotation=20)
+        plt.setp(ax_eth.get_xticklabels(), rotation=15)
         ax_eth.spines['top'].set_visible(False)
         ax_eth.spines['left'].set_visible(False)
         ax_eth.spines['right'].set_color('#2b313a')
