@@ -1,5 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 import random
 
 # Налаштування сторінки Streamlit для мобільного екрана
@@ -26,7 +27,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 1. ВЕРХНІ ВКЛАДКИ (РОБОЧІ)
+# 1. ВЕРХНІ ВКЛАДКИ
 section = st.selectbox(
     "Виберіть режим торгівлі:",
     ["Ф'ючерси", "Спот", "Опціони", "Торгові боти", "Копітрейдинг"],
@@ -45,7 +46,7 @@ with col_price2:
 
 st.markdown("---")
 
-# 3. ПАНЕЛЬ ТАЙМФРЕЙМІВ (ВІД 1 ГОДИНИ ДО 1 МІСЯЦЯ)
+# 3. ПАНЕЛЬ ТАЙМФРЕЙМІВ
 st.markdown("### Часова рамка:")
 tf = st.radio(
     "Оберіть масштаб:",
@@ -54,29 +55,41 @@ tf = st.radio(
     label_visibility="collapsed"
 )
 
-# 4. ГЕНЕРАЦІЯ ДАНИХ ДЛЯ ГРАФІКІВ
-def generate_data(base_price, timeframe):
-    volatility_map = {
-        "1г": 0.0003,
-        "4г": 0.001,
-        "1д": 0.005,
-        "1тиж": 0.015,
-        "2тиж": 0.025,
-        "1міс": 0.05
-    }
+# 4. ГЕНЕРАЦІЯ ДАНИХ ТА ТОЧНОГО ЧАСУ ДЛЯ ОСІ X
+def generate_time_series(base_price, timeframe):
+    now = datetime.now()
+    points = 6 if timeframe in ["1г", "4г"] else 5
+    
+    if timeframe == "1г":
+        delta = timedelta(minutes=10)
+    elif timeframe == "4г":
+        delta = timedelta(minutes=40)
+    elif timeframe == "1д":
+        delta = timedelta(hours=4)
+    elif timeframe == "1тиж":
+        delta = timedelta(days=1 + 1/3)
+    elif timeframe == "2тиж":
+        delta = timedelta(days=3)
+    else:  # "1міс"
+        delta = timedelta(days=6)
+
+    times = [(now - delta * i).strftime("%H:%M" if timeframe in ["1г", "4г"] else "%d.%m") for i in range(points - 1, -1, -1)]
+    
+    volatility_map = {"1г": 0.0003, "4г": 0.001, "1д": 0.005, "1тиж": 0.015, "2тиж": 0.025, "1міс": 0.05}
     vol = volatility_map.get(timeframe, 0.01)
-    points = 30
+    
     data = [base_price * (1 - vol)]
     for _ in range(points - 1):
         change = data[-1] * random.uniform(-vol, vol)
         data.append(data[-1] + change)
-    data[-1] = base_price
-    return data
+    data[-1] = base_price  # Фіксація поточної ціни «зараз» у кінці
+    
+    return times, data
 
-btc_data = generate_data(84666.0, tf)
-eth_data = generate_data(2506.0, tf)
+times_btc, btc_data = generate_time_series(84666.0, tf)
+times_eth, eth_data = generate_time_series(2506.0, tf)
 
-# 5. ДВА ГРАФІКИ ПОРУЧ (BTC та ETH)
+# 5. ДВА ГРАФІКИ ПОРУЧ З ТОЧНИМ ЧАСОМ ЗНИЗУ ТА ТОЧКАМИ
 col_chart1, col_chart2 = st.columns(2)
 
 with col_chart1:
@@ -84,9 +97,12 @@ with col_chart1:
     fig_btc, ax_btc = plt.subplots(figsize=(4, 2.5))
     fig_btc.patch.set_facecolor('#1e2329')
     ax_btc.set_facecolor('#1e2329')
-    ax_btc.plot(btc_data, color='#f0b90b', linewidth=1.5)
-    ax_btc.fill_between(range(len(btc_data)), min(btc_data)*0.99, btc_data, color='#f0b90b', alpha=0.12)
+    
+    ax_btc.plot(times_btc, btc_data, color='#f0b90b', linewidth=1.5, marker='o', markersize=4)
+    ax_btc.fill_between(times_btc, min(btc_data)*0.99, btc_data, color='#f0b90b', alpha=0.12)
+    
     ax_btc.tick_params(colors='#848e9c', labelsize=7)
+    plt.setp(ax_btc.get_xticklabels(), rotation=20)
     ax_btc.spines['top'].set_visible(False)
     ax_btc.spines['left'].set_visible(False)
     ax_btc.spines['right'].set_color('#2b313a')
@@ -98,9 +114,12 @@ with col_chart2:
     fig_eth, ax_eth = plt.subplots(figsize=(4, 2.5))
     fig_eth.patch.set_facecolor('#1e2329')
     ax_eth.set_facecolor('#1e2329')
-    ax_eth.plot(eth_data, color='#0ecb81', linewidth=1.5)
-    ax_eth.fill_between(range(len(eth_data)), min(eth_data)*0.99, eth_data, color='#0ecb81', alpha=0.12)
+    
+    ax_eth.plot(times_eth, eth_data, color='#0ecb81', linewidth=1.5, marker='o', markersize=4)
+    ax_eth.fill_between(times_eth, min(eth_data)*0.99, eth_data, color='#0ecb81', alpha=0.12)
+    
     ax_eth.tick_params(colors='#848e9c', labelsize=7)
+    plt.setp(ax_eth.get_xticklabels(), rotation=20)
     ax_eth.spines['top'].set_visible(False)
     ax_eth.spines['left'].set_visible(False)
     ax_eth.spines['right'].set_color('#2b313a')
