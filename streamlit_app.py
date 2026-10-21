@@ -74,20 +74,20 @@ with left_col:
     with col_send:
         send_button = st.button("➤ Надіслати", use_container_width=True)
 
-    # Оновлений формат відповідей Міші згідно з новими правилами
+    # Відповіді Міші згідно з новими правилами
     if send_button or user_query:
         query_text = user_query.lower() if user_query else "голосовий запит"
         if "біткоїн" in query_text or "btc" in query_text or "ріст" in query_text or "купу" in query_text:
             st.info("🟢 🟢 **Все ок, купуємо.**\n\n*(Ринок бадьоро росте — зелене світло, можна залітати).*")
         elif "дамп" in query_text or "панік" in query_text or "пада" in query_text or "шторм" in query_text:
-            st.info("🔴 🔴 **Нічого не робимо!**\n\n*(Потужний дамп або паніка — краще перечекати в безпеці. Дамп (Dump) у криптовалюті — це різке та масштабне падіння ціни активу, яке зазвичай викликане масовим, одночасним розпродажем монет на біржі).*")
+            st.info("🔴 🔴 **Нічого не робимо!**\n\n*(Потужний дамп або паніка — краще перечекати в безпеці. Дамп (Dump) у криптовалюті — це різке та масштабне падіння ціни активу).*")
         else:
-            st.info(f"🟡 🟡 **Туман на горизонті, тримаємось берега.**\n\n*(На ринку невизначеність у режимі [{section}], флет або шторм — краще зайняти вичікувальну позицію і не ризикувати капіталом).*")
+            st.info(f"🟡 🟡 **Туман на горизонті, тримаємось берега.**\n\n*(На ринку невизначеність у режимі [{section}], флет або шторм — краще зайняти вичікувальну позицію).*")
     elif voice_input:
-        st.info("🟢 🟢 **Все ок, купуємо.**\n\n*(Голосовий запит розпізнано! Ринок бадьоро росте — зелене світло).*")
+        st.info("🟢 🟢 **Все ок, купуємо.**\n\n*(Голосовий запит розпізнано! Ринок бадьоро росте).*")
 
 
-# --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки) ---
+# --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки з мінімумами) ---
 with right_col:
     st.markdown("<h3 style='font-size: 13px; margin: 0;'>🚀 CryptoMinter Pro</h3>", unsafe_allow_html=True)
 
@@ -103,7 +103,7 @@ with right_col:
     # Генерація даних для графіків
     def generate_time_series(base_price, timeframe):
         now = datetime.now()
-        points = 4
+        points = 5
         
         if timeframe == "1г":
             delta = timedelta(minutes=15)
@@ -132,16 +132,25 @@ with right_col:
     times_btc, btc_data = generate_time_series(84666.0, tf)
     times_eth, eth_data = generate_time_series(2506.0, tf)
 
-    # Мікро-графіки поруч
+    # Знаходимо мінімуми для графіків
+    min_btc = min(btc_data)
+    min_btc_idx = btc_data.index(min_btc)
+
+    min_eth = min(eth_data)
+    min_eth_idx = eth_data.index(min_eth)
+
+    # Мікро-графіки поруч із позначенням дна (мінімуму)
     gc1, gc2 = st.columns(2, gap="small")
 
     with gc1:
-        st.markdown(f"<span style='font-size: 9px; color: #f0b90b;'>**BTC — {tf}**</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size: 9px; color: #f0b90b;'>**BTC ({tf}) | Дно: ${min_btc:,.0f}**</span>", unsafe_allow_html=True)
         fig_btc, ax_btc = plt.subplots(figsize=(2.2, 1.2))
         fig_btc.patch.set_facecolor('#1e2329')
         ax_btc.set_facecolor('#1e2329')
         
         ax_btc.plot(times_btc, btc_data, color='#f0b90b', linewidth=1, marker='o', markersize=2)
+        # Виділяємо точку мінімуму червоним маркером
+        ax_btc.plot(times_btc[min_btc_idx], min_btc, color='red', marker='v', markersize=5)
         ax_btc.fill_between(times_btc, min(btc_data)*0.99, btc_data, color='#f0b90b', alpha=0.12)
         
         ax_btc.tick_params(colors='#848e9c', labelsize=4)
@@ -154,12 +163,14 @@ with right_col:
         st.pyplot(fig_btc)
 
     with gc2:
-        st.markdown(f"<span style='font-size: 9px; color: #0ecb81;'>**ETH — {tf}**</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size: 9px; color: #0ecb81;'>**ETH ({tf}) | Дно: ${min_eth:,.0f}**</span>", unsafe_allow_html=True)
         fig_eth, ax_eth = plt.subplots(figsize=(2.2, 1.2))
         fig_eth.patch.set_facecolor('#1e2329')
         ax_eth.set_facecolor('#1e2329')
         
         ax_eth.plot(times_eth, eth_data, color='#0ecb81', linewidth=1, marker='o', markersize=2)
+        # Виділяємо точку мінімуму червоним маркером
+        ax_eth.plot(times_eth[min_eth_idx], min_eth, color='red', marker='v', markersize=5)
         ax_eth.fill_between(times_eth, min(eth_data)*0.99, eth_data, color='#0ecb81', alpha=0.12)
         
         ax_eth.tick_params(colors='#848e9c', labelsize=4)
