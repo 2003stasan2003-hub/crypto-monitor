@@ -87,21 +87,21 @@ with left_col:
         st.info("🟢 🟢 **Все ок, купуємо.**\n\n*(Голосовий запит розпізнано! Ринок бадьоро росте).*")
 
 
-# --- ПРАВА СТОРОНА: Великий робочий простір (Новий логотип Bittereum + Ціни + Графіки) ---
+# --- ПРАВА СТОРОНА: Великий робочий простір із шапкою в самому верху ---
 with right_col:
-    # Шапка з новим затвердженим логотипом та назвою BitThereum Terminal
+    # 🌟 ШАПКА САЙТУ: Розміщена в самому верху над графіками та цінами[cite: 13, 14]
     st.markdown("""
-        <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 4px;'>
-            <div style='background: #1e2329; border: 1px solid #2b313a; border-radius: 6px; padding: 2px 6px; display: inline-flex; align-items: center;'>
-                <span style='color: #f0b90b; font-weight: bold; font-size: 14px;'>₿</span>
-                <span style='color: #c0c0c0; font-weight: bold; font-size: 13px; margin: 0 2px;'>Ξ</span>
-                <span style='color: #0ecb81; font-size: 12px;'>↗</span>
+        <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #2b313a;'>
+            <div style='background: #1e2329; border: 1px solid #2b313a; border-radius: 6px; padding: 2px 8px; display: inline-flex; align-items: center;'>
+                <span style='color: #f0b90b; font-weight: bold; font-size: 15px;'>₿</span>
+                <span style='color: #c0c0c0; font-weight: bold; font-size: 13px; margin: 0 3px;'>Ξ</span>
+                <span style='color: #0ecb81; font-size: 13px;'>↗</span>
             </div>
-            <h3 style='font-size: 13px; margin: 0; color: #f0b90b; letter-spacing: 0.5px;'>BitThereum Terminal</h3>
+            <h3 style='font-size: 15px; margin: 0; color: #f0b90b; letter-spacing: 0.5px;'>BitThereum Terminal</h3>
         </div>
     """, unsafe_allow_html=True)
 
-    # Ціни в один мікро-рядок
+    # Ціни в один мікро-рядок під шапкою
     cp1, cp2, cp3 = st.columns([1.2, 1.2, 1])
     with cp1:
         st.markdown("<span style='color: #0ecb81; font-size: 10px; font-weight: bold;'>BTC: $84,666 (+2.4%)</span>", unsafe_allow_html=True)
