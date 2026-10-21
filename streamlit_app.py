@@ -62,7 +62,7 @@ with left_col:
     )
 
     st.markdown("<hr style='margin: 4px 0px; border-color: #2b313a;'>", unsafe_allow_html=True)
-    st.markdown("<span style='font-size: 11px; color: #f0b90b;'>🤖 **ШІ-Помічник**</span>", unsafe_allow_html=True)
+    st.markdown("<span style='font-size: 11px; color: #f0b90b;'>🤖 **ШІ-Помічник (Ринок з перчинкою)**</span>", unsafe_allow_html=True)
 
     # 1. Текстове запитання до ШІ
     user_query = st.text_input("Запитати ШІ:", placeholder="Введіть питання...", label_visibility="collapsed")
@@ -74,17 +74,17 @@ with left_col:
     with col_send:
         send_button = st.button("➤ Надіслати", use_container_width=True)
 
-    # Обробка відповідей ШІ
+    # Інтелектуальний формат відповідей ШІ з гумором та атмоферою
     if send_button or user_query:
-        if "біткоїн" in user_query.lower() or "btc" in user_query.lower():
-            st.info("🤖 ШІ: Біткоїн у стабільному тренді. Слідкуйте за рівнями підтримки.")
-        elif " eth " in user_query.lower() or "ефір" in user_query.lower():
-            st.info("🤖 ШІ: Ethereum показує гарну волатильність для режиму " + section)
+        query_text = user_query.lower() if user_query else "голосовий запит"
+        if "біткоїн" in query_text or "btc" in query_text or "штурм" in query_text:
+            st.info("🟢 **«Штурмуємо вершини, час сідати в ракету!»**\n\n*(Розшифровка: Ринок бадьоро росте або зловив соковите дно. Зелене світло, залітаємо в лонг, але не забуваємо про стопи!)*")
+        elif "шторм" in query_text or "паніка" in query_text or "дамп" in query_text:
+            st.info("🔴 **«Океан штормить, рятуймо капітал!»**\n\n*(Розшифровка: Потужний дамп або шторм на горизонті. Краще перечекати в стейблкоїнах, ніж намагатися зловити падаючі ножі.)*")
         else:
-            query_text = user_query if user_query else "голосовий запит"
-            st.info(f"🤖 ШІ: Отримано запит ('{query_text}'). Режим: {section}")
+            st.info(f"🟡 **«Туман на горизонті, тримаємося берега.»**\n\n*(Розшифровка: Невизначеність та флет у режимі [{section}]. Краще зайняти вичікувальну позицію і не ризикувати капіталом на емоціях!)*")
     elif voice_input:
-        st.info(f"🤖 ШІ (розпізнано голос): Аудіофіксацію опрацьовано для '{section}'!")
+        st.info(f"🟢 **«Штурмуємо вершини, час сідати в ракету!»**\n\n*(Розшифровка: Голосовий запит успішно розпізнано! Ринок дає зелене світло для режиму [{section}].)*")
 
 
 # --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки) ---
