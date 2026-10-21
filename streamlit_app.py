@@ -35,9 +35,17 @@ st.markdown("""
 # Жорсткий поділ екрана на дві частини для смартфона
 left_col, right_col = st.columns([1.1, 2.5], gap="small")
 
-# --- ЛІВА СТОРОНА: Меню керування та ШІ-помічник із кнопкою надсилання ---
+# --- ЛІВА СТОРОНА: Меню, кнопка Виконати поряд і ШІ-помічник ---
 with left_col:
-    st.markdown("<h3 style='font-size: 13px; margin: 0;'>⚙️ Меню</h3>", unsafe_allow_html=True)
+    # Рядок з Меню та кнопкою Виконати поруч
+    menu_col, btn_col = st.columns([1.3, 1], gap="small")
+    with menu_col:
+        st.markdown("<h3 style='font-size: 13px; margin: 0;'>⚙️ Меню</h3>", unsafe_allow_html=True)
+    with btn_col:
+        exec_button = st.button("🚀 Виконати", use_container_width=True)
+
+    if exec_button:
+        st.success("Виконано!")
     
     section = st.selectbox(
         "Режим:",
@@ -66,7 +74,7 @@ with left_col:
     with col_send:
         send_button = st.button("➤ Надіслати", use_container_width=True)
 
-    # Обробка відповідей ШІ при натисканні кнопки або введенні тексту
+    # Обробка відповідей ШІ
     if send_button or user_query:
         if "біткоїн" in user_query.lower() or "btc" in user_query.lower():
             st.info("🤖 ШІ: Біткоїн у стабільному тренді. Слідкуйте за рівнями підтримки.")
@@ -74,12 +82,9 @@ with left_col:
             st.info("🤖 ШІ: Ethereum показує гарну волатильність для режиму " + section)
         else:
             query_text = user_query if user_query else "голосовий запит"
-            st.info(f"🤖 ШІ: Отримано запит ('{query_text}'). База знань для режиму '{section}' рекомендує обережний ризик-менеджмент!")
+            st.info(f"🤖 ШІ: Отримано запит ('{query_text}'). Режим: {section}")
     elif voice_input:
-        st.info(f"🤖 ШІ (розпізнано голос): Аудіофіксацію успішно опрацьовано для режиму '{section}'!")
-
-    if st.button("🚀 Виконати", use_container_width=True):
-        st.success("Виконано!")
+        st.info(f"🤖 ШІ (розпізнано голос): Аудіофіксацію опрацьовано для '{section}'!")
 
 
 # --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки) ---
