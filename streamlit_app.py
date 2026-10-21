@@ -87,7 +87,7 @@ with left_col:
         st.info("🟢 🟢 **Все ок, купуємо.**\n\n*(Голосовий запит розпізнано! Ринок бадьоро росте).*")
 
 
-# --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки з мінімумами) ---
+# --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки з чітким дном) ---
 with right_col:
     st.markdown("<h3 style='font-size: 13px; margin: 0;'>🚀 CryptoMinter Pro</h3>", unsafe_allow_html=True)
 
@@ -100,7 +100,7 @@ with right_col:
     with cp3:
         st.markdown(f"<span style='color: #f0b90b; font-size: 9px;'>Режим: {section}</span>", unsafe_allow_html=True)
 
-    # Генерація даних для графіків
+    # Генерація даних для графіків з більш помітною волатильністю, щоб падіння було видно
     def generate_time_series(base_price, timeframe):
         now = datetime.now()
         points = 5
@@ -119,8 +119,10 @@ with right_col:
             delta = timedelta(days=7)
 
         times = [(now - delta * i).strftime("%H:%M" if timeframe in ["1г", "4г"] else "%d.%m") for i in range(points - 1, -1, -1)]
-        volatility_map = {"1г": 0.0003, "4г": 0.001, "1д": 0.005, "1тиж": 0.015, "2тиж": 0.025, "1міс": 0.05}
-        vol = volatility_map.get(timeframe, 0.01)
+        
+        # Трохи збільшимо розкид, щоб падіння та мінімуми чітко кидалися в очі на графіку
+        volatility_map = {"1г": 0.001, "4г": 0.003, "1д": 0.008, "1тиж": 0.02, "2тиж": 0.035, "1міс": 0.06}
+        vol = volatility_map.get(timeframe, 0.015)
         
         data = [base_price * (1 - vol)]
         for _ in range(points - 1):
@@ -132,26 +134,24 @@ with right_col:
     times_btc, btc_data = generate_time_series(84666.0, tf)
     times_eth, eth_data = generate_time_series(2506.0, tf)
 
-    # Знаходимо мінімуми для графіків
     min_btc = min(btc_data)
-    min_btc_idx = btc_data.index(min_btc)
-
     min_eth = min(eth_data)
-    min_eth_idx = eth_data.index(min_eth)
 
-    # Мікро-графіки поруч із позначенням дна (мінімуму)
+    # Мікро-графіки поруч із виразною червоною лінією дна
     gc1, gc2 = st.columns(2, gap="small")
 
     with gc1:
-        st.markdown(f"<span style='font-size: 9px; color: #f0b90b;'>**BTC ({tf}) | Дно: ${min_btc:,.0f}**</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size: 9px; color: #f0b90b;'>**BTC ({tf}) 📉 Дно: ${min_btc:,.0f}**</span>", unsafe_allow_html=True)
         fig_btc, ax_btc = plt.subplots(figsize=(2.2, 1.2))
         fig_btc.patch.set_facecolor('#1e2329')
         ax_btc.set_facecolor('#1e2329')
         
-        ax_btc.plot(times_btc, btc_data, color='#f0b90b', linewidth=1, marker='o', markersize=2)
-        # Виділяємо точку мінімуму червоним маркером
-        ax_btc.plot(times_btc[min_btc_idx], min_btc, color='red', marker='v', markersize=5)
-        ax_btc.fill_between(times_btc, min(btc_data)*0.99, btc_data, color='#f0b90b', alpha=0.12)
+        ax_btc.plot(times_btc, btc_data, color='#f0b90b', linewidth=1.2, marker='o', markersize=2.5)
+        
+        # Жирна червона пунктирна лінія рівнів мінімуму
+        ax_btc.axhline(y=min_btc, color='#ff4d4d', linestyle='--', linewidth=1.2, alpha=0.9)
+        
+        ax_btc.fill_between(times_btc, min_btc * 0.995, btc_data, color='#f0b90b', alpha=0.12)
         
         ax_btc.tick_params(colors='#848e9c', labelsize=4)
         plt.setp(ax_btc.get_xticklabels(), rotation=5)
@@ -163,15 +163,17 @@ with right_col:
         st.pyplot(fig_btc)
 
     with gc2:
-        st.markdown(f"<span style='font-size: 9px; color: #0ecb81;'>**ETH ({tf}) | Дно: ${min_eth:,.0f}**</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size: 9px; color: #0ecb81;'>**ETH ({tf}) 📉 Дно: ${min_eth:,.0f}**</span>", unsafe_allow_html=True)
         fig_eth, ax_eth = plt.subplots(figsize=(2.2, 1.2))
         fig_eth.patch.set_facecolor('#1e2329')
         ax_eth.set_facecolor('#1e2329')
         
-        ax_eth.plot(times_eth, eth_data, color='#0ecb81', linewidth=1, marker='o', markersize=2)
-        # Виділяємо точку мінімуму червоним маркером
-        ax_eth.plot(times_eth[min_eth_idx], min_eth, color='red', marker='v', markersize=5)
-        ax_eth.fill_between(times_eth, min(eth_data)*0.99, eth_data, color='#0ecb81', alpha=0.12)
+        ax_eth.plot(times_eth, eth_data, color='#0ecb81', linewidth=1.2, marker='o', markersize=2.5)
+        
+        # Жирна червона пунктирна лінія рівнів мінімуму
+        ax_eth.axhline(y=min_eth, color='#ff4d4d', linestyle='--', linewidth=1.2, alpha=0.9)
+        
+        ax_eth.fill_between(times_eth, min_eth * 0.995, eth_data, color='#0ecb81', alpha=0.12)
         
         ax_eth.tick_params(colors='#848e9c', labelsize=4)
         plt.setp(ax_eth.get_xticklabels(), rotation=5)
