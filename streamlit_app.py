@@ -5,8 +5,8 @@ import random
 
 # Налаштування сторінки Streamlit на один екран без скролінгу
 st.set_page_config(
-    page_title="CryptoMinter Pro",
-    page_icon="📈",
+    page_title="BitThereum Terminal",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -87,9 +87,19 @@ with left_col:
         st.info("🟢 🟢 **Все ок, купуємо.**\n\n*(Голосовий запит розпізнано! Ринок бадьоро росте).*")
 
 
-# --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки з чітким дном) ---
+# --- ПРАВА СТОРОНА: Великий робочий простір (Новий логотип Bittereum + Ціни + Графіки) ---
 with right_col:
-    st.markdown("<h3 style='font-size: 13px; margin: 0;'>🚀 CryptoMinter Pro</h3>", unsafe_allow_html=True)
+    # Шапка з новим затвердженим логотипом та назвою BitThereum Terminal
+    st.markdown("""
+        <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 4px;'>
+            <div style='background: #1e2329; border: 1px solid #2b313a; border-radius: 6px; padding: 2px 6px; display: inline-flex; align-items: center;'>
+                <span style='color: #f0b90b; font-weight: bold; font-size: 14px;'>₿</span>
+                <span style='color: #c0c0c0; font-weight: bold; font-size: 13px; margin: 0 2px;'>Ξ</span>
+                <span style='color: #0ecb81; font-size: 12px;'>↗</span>
+            </div>
+            <h3 style='font-size: 13px; margin: 0; color: #f0b90b; letter-spacing: 0.5px;'>BitThereum Terminal</h3>
+        </div>
+    """, unsafe_allow_html=True)
 
     # Ціни в один мікро-рядок
     cp1, cp2, cp3 = st.columns([1.2, 1.2, 1])
@@ -100,7 +110,7 @@ with right_col:
     with cp3:
         st.markdown(f"<span style='color: #f0b90b; font-size: 9px;'>Режим: {section}</span>", unsafe_allow_html=True)
 
-    # Генерація даних для графіків з більш помітною волатильністю, щоб падіння було видно
+    # Генерація даних для графіків з чітким дном
     def generate_time_series(base_price, timeframe):
         now = datetime.now()
         points = 5
@@ -120,7 +130,6 @@ with right_col:
 
         times = [(now - delta * i).strftime("%H:%M" if timeframe in ["1г", "4г"] else "%d.%m") for i in range(points - 1, -1, -1)]
         
-        # Трохи збільшимо розкид, щоб падіння та мінімуми чітко кидалися в очі на графіку
         volatility_map = {"1г": 0.001, "4г": 0.003, "1д": 0.008, "1тиж": 0.02, "2тиж": 0.035, "1міс": 0.06}
         vol = volatility_map.get(timeframe, 0.015)
         
@@ -147,10 +156,7 @@ with right_col:
         ax_btc.set_facecolor('#1e2329')
         
         ax_btc.plot(times_btc, btc_data, color='#f0b90b', linewidth=1.2, marker='o', markersize=2.5)
-        
-        # Жирна червона пунктирна лінія рівнів мінімуму
         ax_btc.axhline(y=min_btc, color='#ff4d4d', linestyle='--', linewidth=1.2, alpha=0.9)
-        
         ax_btc.fill_between(times_btc, min_btc * 0.995, btc_data, color='#f0b90b', alpha=0.12)
         
         ax_btc.tick_params(colors='#848e9c', labelsize=4)
@@ -169,10 +175,7 @@ with right_col:
         ax_eth.set_facecolor('#1e2329')
         
         ax_eth.plot(times_eth, eth_data, color='#0ecb81', linewidth=1.2, marker='o', markersize=2.5)
-        
-        # Жирна червона пунктирна лінія рівнів мінімуму
         ax_eth.axhline(y=min_eth, color='#ff4d4d', linestyle='--', linewidth=1.2, alpha=0.9)
-        
         ax_eth.fill_between(times_eth, min_eth * 0.995, eth_data, color='#0ecb81', alpha=0.12)
         
         ax_eth.tick_params(colors='#848e9c', labelsize=4)
