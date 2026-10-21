@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import random
 
-# Налаштування широкого макета
+# Налаштування сторінки Streamlit на один екран без скролінгу
 st.set_page_config(
     page_title="CryptoMinter Pro",
     page_icon="📈",
@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Ультракомпактні стилі для екранів 6" (прибираємо зайві відступи, робимо інтерфейс мікро-мобільним)
+# Стилі Binance для мобільного екрана
 st.markdown("""
     <style>
     .main {
@@ -25,23 +25,17 @@ st.markdown("""
     h1, h2, h3, p, label, span {
         color: #ffffff !important;
     }
-    /* Зменшуємо шрифти для мобільних елементів керування */
     div[data-baseweb="select"] > div, button, .stRadio label {
         font-size: 11px !important;
         min-height: 24px !important;
     }
-    /* Запобігаємо появі скролбарів */
-    section.main > div {
-        max-width: 100% !important;
-        padding: 0px 4px !important;
-    }
     </style>
 """, unsafe_allow_html=True)
 
-# Жорсткий поділ екрана на 2 частини спеціально для невеликих екранів
+# Жорсткий поділ екрана на дві частини для смартфона
 left_col, right_col = st.columns([1.1, 2.5], gap="small")
 
-# --- ЛІВА СТОРОНА: Меню керування та ШІ (Компактно) ---
+# --- ЛІВА СТОРОНА: Меню керування та ШІ-помічник із голосовим введенням ---
 with left_col:
     st.markdown("<h3 style='font-size: 13px; margin: 0;'>⚙️ Меню</h3>", unsafe_allow_html=True)
     
@@ -59,21 +53,31 @@ with left_col:
         label_visibility="collapsed"
     )
 
-    if st.button("🤖 ШІ-Аналіз", use_container_width=True):
-        ai_tips = {
-            "Ф'ючерси": "💡 Тренд бичачий. 10x крос.",
-            "Спот": "💡 DCA накопичення.",
-            "Опціони": "💡 Кол (Call) стратегія.",
-            "Боти": "💡 Сітка ±15%.",
-            "Копітрейдинг": "💡 Топ трейдери."
-        }
-        st.info(ai_tips.get(section, "💡 Аналіз ринку..."))
+    st.markdown("<hr style='margin: 4px 0px; border-color: #2b313a;'>", unsafe_allow_html=True)
+    st.markdown("<span style='font-size: 11px; color: #f0b90b;'>🤖 **ШІ-Помічник (Чат)**</span>", unsafe_allow_html=True)
+
+    # 1. Текстове запитання до ШІ
+    user_query = st.text_input("Запитати ШІ:", placeholder="Введіть питання...", label_visibility="collapsed")
+
+    # 2. Голосове введення (мікрофон)
+    voice_input = st.audio_input("Голос")
+
+    # Обробка відповідей ШІ
+    if user_query:
+        if "біткоїн" in user_query.lower() or "btc" in user_query.lower():
+            st.info("🤖 ШІ: Біткоїн у стабільному тренді. Слідкуйте за рівнями підтримки.")
+        elif " eth " in user_query.lower() or "ефір" in user_query.lower():
+            st.info("🤖 ШІ: Ethereum показує гарну волатильність для режиму " + section)
+        else:
+            st.info(f"🤖 ШІ: Аналізую запит для режиму '{section}'. Дотримуйтесь ризик-менеджменту!")
+    elif voice_input:
+        st.info(f"🤖 ШІ (розпізнано голос): Отримано аудіозапит! База знань для режиму '{section}' рекомендує обережний вход у позицію.")
 
     if st.button("🚀 Виконати", use_container_width=True):
         st.success("Виконано!")
 
 
-# --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки на одному екрані) ---
+# --- ПРАВА СТОРОНА: Великий робочий простір (Ціни + 2 графіки) ---
 with right_col:
     st.markdown("<h3 style='font-size: 13px; margin: 0;'>🚀 CryptoMinter Pro</h3>", unsafe_allow_html=True)
 
@@ -89,7 +93,7 @@ with right_col:
     # Генерація даних для графіків
     def generate_time_series(base_price, timeframe):
         now = datetime.now()
-        points = 4  # Менше точок для компактності на 6" екрані
+        points = 4
         
         if timeframe == "1г":
             delta = timedelta(minutes=15)
