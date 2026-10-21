@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import random
 
-# Налаштування сторінки Streamlit для мобільного екрана
+# Налаштування сторінки Streamlit для мобільного екрана (широкий макет)
 st.set_page_config(
     page_title="CryptoMinter Pro",
     page_icon="📈",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
@@ -27,106 +27,120 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 1. ВЕРХНІ ВКЛАДКИ
-section = st.selectbox(
-    "Виберіть режим торгівлі:",
-    ["Ф'ючерси", "Спот", "Опціони", "Торгові боти", "Копітрейдинг"],
-    index=0
-)
-
-# 2. ПАНЕЛЬ ЦІН (BTC та ETH)
-col_price1, col_price2 = st.columns(2)
-with col_price1:
-    st.markdown("### **BTC/USDT**")
-    st.markdown("<span style='color: #0ecb81; font-size: 20px; font-weight: bold;'>$84,666.00 (+2.44%)</span>", unsafe_allow_html=True)
-
-with col_price2:
-    st.markdown("### **ETH/USDT**")
-    st.markdown("<span style='color: #0ecb81; font-size: 20px; font-weight: bold;'>$2,506.08 (+2.48%)</span>", unsafe_allow_html=True)
-
+# Заголовок додатку
+st.markdown("## 🚀 CryptoMinter Pro — Аналітичний Термінал")
 st.markdown("---")
 
-# 3. ПАНЕЛЬ ТАЙМФРЕЙМІВ
-st.markdown("### Часова рамка:")
-tf = st.radio(
-    "Оберіть масштаб:",
-    ["1г", "4г", "1д", "1тиж", "2тиж", "1міс"],
-    horizontal=True,
-    label_visibility="collapsed"
-)
+# РОЗПОДІЛ НА ДВІ ЧАСТИНИ: ЛІВА (маленька/панель управління) та ПРАВА (велика/графіки)
+left_panel, right_panel = st.columns([1, 2.8])
 
-# 4. ГЕНЕРАЦІЯ ДАНИХ ТА ТОЧНОГО ЧАСУ ДЛЯ ОСІ X
-def generate_time_series(base_price, timeframe):
-    now = datetime.now()
-    points = 6 if timeframe in ["1г", "4г"] else 5
+with left_panel:
+    st.markdown("### ⚙️ Керування")
     
-    if timeframe == "1г":
-        delta = timedelta(minutes=10)
-    elif timeframe == "4г":
-        delta = timedelta(minutes=40)
-    elif timeframe == "1д":
-        delta = timedelta(hours=4)
-    elif timeframe == "1тиж":
-        delta = timedelta(days=1 + 1/3)
-    elif timeframe == "2тиж":
-        delta = timedelta(days=3)
-    else:  # "1міс"
-        delta = timedelta(days=6)
+    # 1. Режими торгівлі
+    section = st.selectbox(
+        "Режим торгівлі:",
+        ["Ф'ючерси", "Спот", "Опціони", "Торгові боти", "Копітрейдинг"],
+        index=0
+    )
 
-    times = [(now - delta * i).strftime("%H:%M" if timeframe in ["1г", "4г"] else "%d.%m") for i in range(points - 1, -1, -1)]
+    st.markdown("---")
     
-    volatility_map = {"1г": 0.0003, "4г": 0.001, "1д": 0.005, "1тиж": 0.015, "2тиж": 0.025, "1міс": 0.05}
-    vol = volatility_map.get(timeframe, 0.01)
-    
-    data = [base_price * (1 - vol)]
-    for _ in range(points - 1):
-        change = data[-1] * random.uniform(-vol, vol)
-        data.append(data[-1] + change)
-    data[-1] = base_price  # Фіксація поточної ціни «зараз» у кінці
-    
-    return times, data
+    # 2. Часова рамка
+    st.markdown("### ⏱ Часова рамка")
+    tf = st.radio(
+        "Оберіть масштаб:",
+        ["1г", "4г", "1д", "1тиж", "2тиж", "1міс"],
+        horizontal=True
+    )
 
-times_btc, btc_data = generate_time_series(84666.0, tf)
-times_eth, eth_data = generate_time_series(2506.0, tf)
-
-# 5. ДВА ГРАФІКИ ПОРУЧ З ТОЧНИМ ЧАСОМ ЗНИЗУ ТА ТОЧКАМИ
-col_chart1, col_chart2 = st.columns(2)
-
-with col_chart1:
-    st.markdown(f"**Bitcoin (BTC) — [{tf}]**")
-    fig_btc, ax_btc = plt.subplots(figsize=(4, 2.5))
-    fig_btc.patch.set_facecolor('#1e2329')
-    ax_btc.set_facecolor('#1e2329')
+    st.markdown("---")
     
-    ax_btc.plot(times_btc, btc_data, color='#f0b90b', linewidth=1.5, marker='o', markersize=4)
-    ax_btc.fill_between(times_btc, min(btc_data)*0.99, btc_data, color='#f0b90b', alpha=0.12)
-    
-    ax_btc.tick_params(colors='#848e9c', labelsize=7)
-    plt.setp(ax_btc.get_xticklabels(), rotation=20)
-    ax_btc.spines['top'].set_visible(False)
-    ax_btc.spines['left'].set_visible(False)
-    ax_btc.spines['right'].set_color('#2b313a')
-    ax_btc.spines['bottom'].set_color('#2b313a')
-    st.pyplot(fig_btc)
+    # 3. Актуальні ціни
+    st.markdown("### 📊 Поточні ціни")
+    st.markdown("**BTC/USDT:** <span style='color: #0ecb81; font-weight: bold;'>$84,666.00 (+2.44%)</span>", unsafe_allow_html=True)
+    st.markdown("**ETH/USDT:** <span style='color: #0ecb81; font-weight: bold;'>$2,506.08 (+2.48%)</span>", unsafe_allow_html=True)
 
-with col_chart2:
-    st.markdown(f"**Ethereum (ETH) — [{tf}]**")
-    fig_eth, ax_eth = plt.subplots(figsize=(4, 2.5))
-    fig_eth.patch.set_facecolor('#1e2329')
-    ax_eth.set_facecolor('#1e2329')
+    st.markdown("---")
     
-    ax_eth.plot(times_eth, eth_data, color='#0ecb81', linewidth=1.5, marker='o', markersize=4)
-    ax_eth.fill_between(times_eth, min(eth_data)*0.99, eth_data, color='#0ecb81', alpha=0.12)
+    # 4. Кнопка виконання операції
+    if st.button(f"Виконати ({section})", use_container_width=True):
+        st.success(f"Успішно опрацьовано для: {section}!")
     
-    ax_eth.tick_params(colors='#848e9c', labelsize=7)
-    plt.setp(ax_eth.get_xticklabels(), rotation=20)
-    ax_eth.spines['top'].set_visible(False)
-    ax_eth.spines['left'].set_visible(False)
-    ax_eth.spines['right'].set_color('#2b313a')
-    ax_eth.spines['bottom'].set_color('#2b313a')
-    st.pyplot(fig_eth)
+    st.markdown("---")
+    st.info("💡 **Порада:** Обирайте часову рамку зверху-ліворуч, щоб динамічно масштабувати графіки справа.")
 
-# 6. КНОПКИ ДІЙ ТА СТАТУС
-st.markdown("---")
-if st.button(f"Виконати операцію у розділі: {section}", use_container_width=True):
-    st.success(f"Успішно опрацьовано запит для режиму: {section}!")
+
+with right_panel:
+    st.markdown("### 📈 Динамічні графіки ринку (BTC & ETH)")
+
+    # Генерація даних та точного часу для осі X
+    def generate_time_series(base_price, timeframe):
+        now = datetime.now()
+        points = 6 if timeframe in ["1г", "4г"] else 5
+        
+        if timeframe == "1г":
+            delta = timedelta(minutes=10)
+        elif timeframe == "4г":
+            delta = timedelta(minutes=40)
+        elif timeframe == "1д":
+            delta = timedelta(hours=4)
+        elif timeframe == "1тиж":
+            delta = timedelta(days=1 + 1/3)
+        elif timeframe == "2тиж":
+            delta = timedelta(days=3)
+        else:  # "1міс"
+            delta = timedelta(days=6)
+
+        times = [(now - delta * i).strftime("%H:%M" if timeframe in ["1г", "4г"] else "%d.%m") for i in range(points - 1, -1, -1)]
+        
+        volatility_map = {"1г": 0.0003, "4г": 0.001, "1д": 0.005, "1тиж": 0.015, "2тиж": 0.025, "1міс": 0.05}
+        vol = volatility_map.get(timeframe, 0.01)
+        
+        data = [base_price * (1 - vol)]
+        for _ in range(points - 1):
+            change = data[-1] * random.uniform(-vol, vol)
+            data.append(data[-1] + change)
+        data[-1] = base_price  # Фіксація поточної ціни «зараз» у кінці
+        
+        return times, data
+
+    times_btc, btc_data = generate_time_series(84666.0, tf)
+    times_eth, eth_data = generate_time_series(2506.0, tf)
+
+    # Паралельні графіки всередині правої панелі
+    col_chart1, col_chart2 = st.columns(2)
+
+    with col_chart1:
+        st.markdown(f"**Bitcoin (BTC) — [{tf}]**")
+        fig_btc, ax_btc = plt.subplots(figsize=(3.5, 3))
+        fig_btc.patch.set_facecolor('#1e2329')
+        ax_btc.set_facecolor('#1e2329')
+        
+        ax_btc.plot(times_btc, btc_data, color='#f0b90b', linewidth=1.5, marker='o', markersize=4)
+        ax_btc.fill_between(times_btc, min(btc_data)*0.99, btc_data, color='#f0b90b', alpha=0.12)
+        
+        ax_btc.tick_params(colors='#848e9c', labelsize=7)
+        plt.setp(ax_btc.get_xticklabels(), rotation=20)
+        ax_btc.spines['top'].set_visible(False)
+        ax_btc.spines['left'].set_visible(False)
+        ax_btc.spines['right'].set_color('#2b313a')
+        ax_btc.spines['bottom'].set_color('#2b313a')
+        st.pyplot(fig_btc)
+
+    with col_chart2:
+        st.markdown(f"**Ethereum (ETH) — [{tf}]**")
+        fig_eth, ax_eth = plt.subplots(figsize=(3.5, 3))
+        fig_eth.patch.set_facecolor('#1e2329')
+        ax_eth.set_facecolor('#1e2329')
+        
+        ax_eth.plot(times_eth, eth_data, color='#0ecb81', linewidth=1.5, marker='o', markersize=4)
+        ax_eth.fill_between(times_eth, min(eth_data)*0.99, eth_data, color='#0ecb81', alpha=0.12)
+        
+        ax_eth.tick_params(colors='#848e9c', labelsize=7)
+        plt.setp(ax_eth.get_xticklabels(), rotation=20)
+        ax_eth.spines['top'].set_visible(False)
+        ax_eth.spines['left'].set_visible(False)
+        ax_eth.spines['right'].set_color('#2b313a')
+        ax_eth.spines['bottom'].set_color('#2b313a')
+        st.pyplot(fig_eth)
